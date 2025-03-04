@@ -2,6 +2,8 @@ export const reAscii = value => /^([\x20-\x7E]+)$/.test(value)
 
 export const reAlphaNumeric = value => /^[a-zA-Z0-9]*$/.test(value)
 
+export const reHash = value => /^[a-fA-F0-9]*$/.test(value)
+
 export const reAlphaNumericHyphenUnderscoreDot = value => /^[a-zA-Z0-9-_.]*$/.test(value)
 
 export const reCommonName = value => /^([A-Z]+|[A-Z]+[0-9A-Z-_:]*[0-9A-Z]+)$/i.test(value)
