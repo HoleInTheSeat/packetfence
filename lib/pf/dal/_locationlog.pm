@@ -52,28 +52,32 @@ BEGIN {
         session_id
         ifDesc
         voip
+        teap_username
+        teap_machinename
     );
 
     %DEFAULTS = (
-        mac => '',
-        switch => '',
-        port => '',
-        vlan => undef,
-        role => undef,
-        connection_type => '',
+        mac                 => '',
+        switch              => '',
+        port                => '',
+        vlan                => undef,
+        role                => undef,
+        connection_type     => '',
         connection_sub_type => undef,
-        dot1x_username => '',
-        ssid => '',
-        start_time => '0000-00-00 00:00:00',
-        end_time => '0000-00-00 00:00:00',
-        switch_ip => undef,
-        switch_ip_int => undef,
-        switch_mac => undef,
-        stripped_user_name => undef,
-        realm => undef,
-        session_id => undef,
-        ifDesc => undef,
-        voip => 'no',
+        dot1x_username      => '',
+        ssid                => '',
+        start_time          => '0000-00-00 00:00:00',
+        end_time            => '0000-00-00 00:00:00',
+        switch_ip           => undef,
+        switch_ip_int       => undef,
+        switch_mac          => undef,
+        stripped_user_name  => undef,
+        realm               => undef,
+        session_id          => undef,
+        ifDesc              => undef,
+        voip                => 'no',
+        teap_username       => '',
+        teap_machinename    => '',
     );
 
     @INSERTABLE_FIELDS = qw(
@@ -95,6 +99,8 @@ BEGIN {
         session_id
         ifDesc
         voip
+        teap_username
+        teap_machinename
     );
 
     %FIELDS_META = (
@@ -216,6 +222,18 @@ BEGIN {
                 'yes' => 1,
             },
         },
+        teap_username => {
+            type => 'VARCHAR',
+            is_auto_increment => 0,
+            is_primary_key => 0,
+            is_nullable => 0,
+        },
+        teap_machinename => {
+            type => 'VARCHAR',
+            is_auto_increment => 0,
+            is_primary_key => 0,
+            is_nullable => 0,
+        },
     );
 
     @PRIMARY_KEYS = qw(
@@ -242,6 +260,8 @@ BEGIN {
         locationlog.session_id
         locationlog.ifDesc
         locationlog.voip
+        locationlog.teap_username
+        locationlog.teap_machinename
     );
 
 }
