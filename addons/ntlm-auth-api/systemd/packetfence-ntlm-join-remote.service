@@ -1,6 +1,6 @@
 # Copyright (C) Inverse inc.
 [Unit]
-Description=PacketFence NTLM Auth join remote
+Description=PacketFence NTLM join remote
 
 [Service]
 StartLimitBurst=3
@@ -9,7 +9,10 @@ Type=notify
 WatchdogSec=30s
 Environment=LOG_LEVEL=INFO
 ExecStart=/usr/local/ntlm-auth-api/sbin/ntlm-join-remote
+ExecStop=/bin/bash -c "docker stop ntlm-join-remote ; echo Stopped"
+ExecStart=/usr/local/ntlm-auth-api/sbin/ntlm-join-remote
 Restart=on-failure
+PIDFile=/usr/local/ntlm-auth-api/var/run/ntlm-join-remote-systemd-notify.pid
 
 [Install]
 WantedBy=multi-user.target
