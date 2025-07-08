@@ -367,7 +367,7 @@ ntlm_auth_api_remote_install:
 	make -C $(SRC_GODIR) sdnotify-proxy
 	install -v -m 0755 $(SRC_GODIR)/sdnotify-proxy $(DESTDIR)$(NTLM_AUTH_API_SBINDIR)/sdnotify-proxy
 	install -v -m 0755 $(SRC_NTLM_AUTH_API_ADDONSDIR)/pfconnector-remote-load.sh $(DESTDIR)$(NTLM_AUTH_API_BINDIR)/pfconnector-remote-load.sh
-        make -C $(SRC_GODIR) ntlm-join-remote
+	make -C $(SRC_GODIR) ntlm-join-remote
 	install -v -m 0755 $(SRC_GODIR)/ntlm-join-remote $(DESTDIR)$(NTLM_AUTH_API_SBINDIR)/ntlm-join-remote
 
 	TMPDIR=$(shell mktemp -d)
