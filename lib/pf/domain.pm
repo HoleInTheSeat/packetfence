@@ -54,7 +54,7 @@ Executes the command in the OS to test the domain join
 
 sub add_computer {
     my $option = shift;
-    my ($computer_name, $computer_password, $domain_controller_ip, $domain_controller_host, $dns_name, $workgroup, $ou, $bind_dn, $bind_pass) = @_;
+    my ($computer_name, $computer_password, $domain_controller_ip, $domain_controller_host, $dns_name, $workgroup, $ou, $bind_dn, $bind_pass, $use_connector) = @_;
 
     if (!defined($ou)) {
         $ou = ""
