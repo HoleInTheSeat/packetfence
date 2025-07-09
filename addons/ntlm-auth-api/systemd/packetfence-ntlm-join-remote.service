@@ -8,7 +8,7 @@ StartLimitInterval=60
 Type=notify
 WatchdogSec=30s
 Environment=LOG_LEVEL=INFO
-ExecStart=/usr/local/ntlm-auth-api/sbin/ntlm-join-remote
+ExecStart=/usr/local/ntlm-auth-api/sbin/ntlm-join-remote-wrapper
 ExecStop=/bin/bash -c "docker stop ntlm-join-remote ; echo Stopped"
 Restart=on-failure
 PIDFile=/usr/local/ntlm-auth-api/var/run/ntlm-join-remote-systemd-notify.pid
