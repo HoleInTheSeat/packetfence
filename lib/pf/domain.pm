@@ -24,6 +24,8 @@ use pf::constants::domain qw($SAMBA_CONF_PATH);
 use Digest::MD4 qw(md4_hex);
 use Encode qw(encode);
 use File::Slurp;
+use pf::factory::connector;
+use pf::api::unifiedapiclient;
 
 # This is to create the templates for the domain info
 our $TT_OPTIONS = { ABSOLUTE => 1 };
@@ -74,56 +76,70 @@ sub add_computer {
     my $computer_group = generate_computer_group($dns_name, $ou);
 
     my $result;
-    if ($option =~ /^\s+$/) {
-        # no delete, simply adds the computer account.
+
+    if(isenabled($use_connector)) {
+        my $connector_conn = pf::factory::connector->for_ip($domain_controller_ip)->dynreverse("127.0.0.1:8080/tcp");
+        my $client = pf::api::unifiedapiclient->new(proto => 'http', host => $connector_conn->{host}, port => $connector_conn->{port});
         eval {
-            $result = safe_pf_run($ADD_COMPUTERS_BIN,
-                "-computer-name", "$computer_name",
-                "-computer-pass", "$computer_password",
-                "-dc-ip", "$domain_controller_ip",
-                "-dc-host", "$domain_controller_host",
-                "-baseDN", "$baseDN",
-                "-computer-group", "$computer_group",
-                "-method=$method",
-                "$domain_auth",
-                { accepted_exit_status => [ 0 ] }
-            );
+	    $client->call("POST", "/ntlm-join", {computer_name => $computer_name, computer_password => $computer_password, dc_ip => $domain_controller_ip, dc_host => $domain_controller_host, baseDN => $baseDN, computer_group => $computer_group, method => $method, domain_auth => $domain_auth, option => $option});
         };
-    }
-    else {
-        # computer account already exists / or other cases.
-        eval {
-            $result = safe_pf_run($ADD_COMPUTERS_BIN,
-                "-computer-name", "$computer_name",
-                "-computer-pass", "$computer_password",
-                "-dc-ip", "$domain_controller_ip",
-                "-dc-host", "$domain_controller_host",
-                "-baseDN", "$baseDN",
-                "-computer-group", "$computer_group",
-                "-method=$method",
-                "$domain_auth",
-                "$option",
-                { accepted_exit_status => [ 0 ] }
-            );
-        };
-    }
+        if($@){
+            return $FALSE, "Not able to add";
+	}
+        return $TRUE, "Success";
+    } else {
 
-    if ($@) {
-        $result = "Executing add computers failed with unknown errors";
-        return $FALSE, $result;
-    }
+        if ($option =~ /^\s+$/) {
+            # no delete, simply adds the computer account.
+            eval {
+                $result = safe_pf_run($ADD_COMPUTERS_BIN,
+                    "-computer-name", "$computer_name",
+                    "-computer-pass", "$computer_password",
+                    "-dc-ip", "$domain_controller_ip",
+                    "-dc-host", "$domain_controller_host",
+                    "-baseDN", "$baseDN",
+                    "-computer-group", "$computer_group",
+                    "-method=$method",
+                    "$domain_auth",
+                    { accepted_exit_status => [ 0 ] }
+                );
+            };
+        }
+        else {
+            # computer account already exists / or other cases.
+            eval {
+                $result = safe_pf_run($ADD_COMPUTERS_BIN,
+                    "-computer-name", "$computer_name",
+                    "-computer-pass", "$computer_password",
+                    "-dc-ip", "$domain_controller_ip",
+                    "-dc-host", "$domain_controller_host",
+                    "-baseDN", "$baseDN",
+                    "-computer-group", "$computer_group",
+                    "-method=$method",
+                    "$domain_auth",
+                    "$option",
+                    { accepted_exit_status => [ 0 ] }
+                );
+            };
+        }
 
-    $result =~ s/Impacket v.*Corporation//g;
-    $result =~ s/^\s+|\s+$//g;
+        if ($@) {
+            $result = "Executing add computers failed with unknown errors";
+            return $FALSE, $result;
+        }
 
-    if ($result =~ /\[\*\] (.+)$/) {
-        my $success_msg = $1;
-        return $TRUE, $success_msg;
-    }
+        $result =~ s/Impacket v.*Corporation//g;
+        $result =~ s/^\s+|\s+$//g;
 
-    if ($result =~ /\[\-\] (.+)$/) {
-        my $error_msg = $1;
-        return $FALSE, $error_msg
+        if ($result =~ /\[\*\] (.+)$/) {
+            my $success_msg = $1;
+            return $TRUE, $success_msg;
+        }
+
+        if ($result =~ /\[\-\] (.+)$/) {
+            my $error_msg = $1;
+            return $FALSE, $error_msg;
+        }
     }
 
     return $FALSE, $result;
