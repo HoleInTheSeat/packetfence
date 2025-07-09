@@ -29,6 +29,7 @@ export {
   BaseFormGroupInput                  as FormGroupBindDn,
   BaseFormGroupInputPassword          as FormGroupBindPass,
   BaseFormGroupSwitch                 as FormGroupNtlmv2Only,
+  BaseFormGroupSwitch                 as FormGroupUseConnector,
   BaseFormGroupSwitch                 as FormGroupRegistration,
 
   BaseFormGroupSwitch                 as FormGroupNtlmCache,
