@@ -97,6 +97,12 @@ func executeHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+	if response.ExitCode != 0 {
+		http.Error(w, response.Error, http.StatusInternalServerError)
+		log.Printf("Command execution failed: %s", response.Error)
+		return
+	}
+
 }
 
 func executeCommand(command string, args []string) CommandResponse {
