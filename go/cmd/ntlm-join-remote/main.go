@@ -48,7 +48,7 @@ type CommandResponse struct {
 	ExitCode int    `json:"exit_code"`
 }
 
-var cmd string = "/usr/local/ntlm-auth-api/bin/impacket/impacket_addcomputer.py"
+var cmd string = "/usr/local/pf/bin/impacket/impacket_addcomputer.py"
 
 // Base context
 var ctx context.Context
