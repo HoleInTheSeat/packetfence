@@ -360,6 +360,7 @@ ntlm_auth_api_remote_install:
 	install -v -m 0755 $(SRC_NTLM_AUTH_API_ADDONSDIR)/containers/manage-images.sh $(DESTDIR)$(NTLM_AUTH_API_CONTAINERSDIR)/manage-images.sh
 	install -v -m 0644 $(SRC_ROOT_DIR)/containers/ntlm-auth-api/Dockerfile -D $(DESTDIR)$(NTLM_AUTH_API_CONTAINERSDIR)/ntlm-auth-api/Dockerfile
 	install -v -m 0644 $(SRC_ROOT_DIR)/containers/ntlm-join-remote/Dockerfile -D $(DESTDIR)$(NTLM_AUTH_API_CONTAINERSDIR)/ntlm-join-remote/Dockerfile
+	install -v -m 0600 $(CURDIR)/containers/daemon.json -D $(DESTDIR)/etc/docker/daemon.json
 
 	install -v -m 0644 $(SRC_ROOT_DIR)/config.mk $(DESTDIR)/config.mk
 
