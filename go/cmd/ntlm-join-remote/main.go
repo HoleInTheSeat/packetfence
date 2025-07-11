@@ -30,15 +30,15 @@ type CommandArgs struct {
 
 func (c *CommandArgs) ToArgs() []string {
 	return []string{
-		"-computer-name", "$computer_name",
-		"-computer-pass", "$computer_password",
-		"-dc-ip", "$domain_controller_ip",
-		"-dc-host", "$domain_controller_host",
-		"-baseDN", "$baseDN",
-		"-computer-group", "$computer_group",
-		"-method=$method",
-		"$domain_auth",
-		"$option",
+		"-computer-name", c.ComputerName,
+		"-computer-pass", c.ComputerPassword,
+		"-dc-ip", c.DcIp,
+		"-dc-host", c.DcHost,
+		"-baseDN", c.BaseDN,
+		"-computer-group", c.ComputerGroup,
+		"-method=" + c.Method,
+		c.DomainAuth,
+		c.Option,
 	}
 }
 
@@ -48,7 +48,7 @@ type CommandResponse struct {
 	ExitCode int    `json:"exit_code"`
 }
 
-var cmd string = "/usr/local/pf/bin/impacket/impacket_addcomputer.py"
+var cmd string = "/usr/local/pf/bin/impacket-addcomputer"
 
 // Base context
 var ctx context.Context
@@ -108,7 +108,7 @@ func executeHandler(w http.ResponseWriter, r *http.Request) {
 func executeCommand(command string, args []string) CommandResponse {
 	var cmd *exec.Cmd
 
-	cmd = exec.Command("sh", "-c", command)
+	cmd = exec.Command(command)
 
 	if len(args) > 0 {
 		cmd.Args = append(cmd.Args, args...)
@@ -116,7 +116,6 @@ func executeCommand(command string, args []string) CommandResponse {
 
 	output, err := cmd.CombinedOutput()
 	exitCode := cmd.ProcessState.ExitCode()
-
 	response := CommandResponse{
 		ExitCode: exitCode,
 	}
