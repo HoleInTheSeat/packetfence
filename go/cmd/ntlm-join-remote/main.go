@@ -29,7 +29,7 @@ type CommandArgs struct {
 }
 
 func (c *CommandArgs) ToArgs() []string {
-	return []string{
+	args := []string{
 		"-computer-name", c.ComputerName,
 		"-computer-pass", c.ComputerPassword,
 		"-dc-ip", c.DcIp,
@@ -38,8 +38,11 @@ func (c *CommandArgs) ToArgs() []string {
 		"-computer-group", c.ComputerGroup,
 		"-method=" + c.Method,
 		c.DomainAuth,
-		c.Option,
 	}
+	if c.Option != "" && c.Option != " " {
+		args = append(args, c.Option)
+	}
+	return args
 }
 
 type CommandResponse struct {
@@ -108,12 +111,11 @@ func executeHandler(w http.ResponseWriter, r *http.Request) {
 func executeCommand(command string, args []string) CommandResponse {
 	var cmd *exec.Cmd
 
-	cmd = exec.Command(command)
+	cmd = exec.Command("/usr/bin/python", command)
 
 	if len(args) > 0 {
 		cmd.Args = append(cmd.Args, args...)
 	}
-
 	output, err := cmd.CombinedOutput()
 	exitCode := cmd.ProcessState.ExitCode()
 	response := CommandResponse{
