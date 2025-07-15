@@ -1,6 +1,7 @@
 package chiselmain
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/inverse-inc/go-utils/sharedutils"
 	chclient "github.com/inverse-inc/packetfence/go/chisel/client"
+	clientapi "github.com/inverse-inc/packetfence/go/chisel/clientapi"
 	chserver "github.com/inverse-inc/packetfence/go/chisel/server"
 	chshare "github.com/inverse-inc/packetfence/go/chisel/share"
 	"github.com/inverse-inc/packetfence/go/chisel/share/cos"
@@ -454,6 +456,13 @@ func client(args []string) {
 	if err := c.Start(ctx); err != nil {
 		log.Fatal(err)
 	}
+	go func(ctx context.Context) {
+		api := clientapi.NewApi(ctx)
+		if err := api.Start(ctx, ":8081"); err != nil {
+			log.Fatal(err)
+		}
+	}(ctx)
+
 	if err := c.Wait(); err != nil {
 		log.Fatal(err)
 	}
