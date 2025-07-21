@@ -81,7 +81,18 @@ sub add_computer {
         my $connector_conn = pf::factory::connector->for_ip($domain_controller_ip)->dynreverse("127.0.0.1:8080/tcp");
         my $client = pf::api::unifiedapiclient->new(proto => 'http', host => $connector_conn->{host}, port => $connector_conn->{port});
         eval {
-	    $client->call("POST", "/ntlm-join", {computer_name => $computer_name, computer_password => $computer_password, dc_ip => $domain_controller_ip, dc_host => $domain_controller_host, baseDN => $baseDN, computer_group => $computer_group, method => $method, domain_auth => $domain_auth, option => $option});
+            my $params = {
+                computer_name     => $computer_name,
+                computer_password => $computer_password,
+                dc_ip             => $domain_controller_ip,
+                dc_host           => $domain_controller_host,
+                baseDN            => $baseDN,
+                computer_group    => $computer_group,
+                method            => $method,
+                domain_auth       => $domain_auth,
+                option            => $option,
+            };
+            $client->call("POST", "/ntlm-join", $params);
         };
         if($@){
             return $FALSE, "Not able to add";
