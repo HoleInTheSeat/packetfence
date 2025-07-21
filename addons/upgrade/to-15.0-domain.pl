@@ -25,7 +25,7 @@ my $domain = pf::IniFiles->new( -file => $domain_config_file, -allowempty => 1);
 if (length ($domain->Sections()) > 0) {
     for my $section ($domain->Sections()) {
         if (!($domain->exists($section, "use_connector"))) {
-            $fsso->newval($section, 'use_connector', '0');
+            $domain->newval($section, 'use_connector', '0');
         } else {
             print "The section $section has already the option use_connector defined"
         }
