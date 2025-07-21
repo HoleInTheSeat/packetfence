@@ -27,7 +27,7 @@ if (length ($domain->Sections()) > 0) {
         if (!($domain->exists($section, "use_connector"))) {
             $domain->newval($section, 'use_connector', '0');
         } else {
-            print "The section $section has already the option use_connector defined"
+            print "The section $section has already the option use_connector defined";
         }
     }
     $domain->RewriteConfig();
