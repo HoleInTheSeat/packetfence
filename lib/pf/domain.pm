@@ -95,7 +95,7 @@ sub add_computer {
             $client->call("POST", "/ntlm-join", $params);
         };
         if($@){
-            return $FALSE, "Not able to add";
+            return $FALSE, "Not able to add: $@";
 	}
         return $TRUE, "Success";
     } else {
