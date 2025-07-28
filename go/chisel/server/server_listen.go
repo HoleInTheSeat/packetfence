@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
-//TLSConfig enables configures TLS
+// TLSConfig enables configures TLS
 type TLSConfig struct {
 	Key     string
 	Cert    string
@@ -119,7 +119,7 @@ func addCA(ca string, c *tls.Config) error {
 	clientCAPool := x509.NewCertPool()
 	if fileInfo.IsDir() {
 		//this is a directory holding CA bundle files
-		files, err := ioutil.ReadDir(ca)
+		files, err := os.ReadDir(ca)
 		if err != nil {
 			return err
 		}

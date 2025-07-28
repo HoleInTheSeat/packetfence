@@ -467,7 +467,7 @@ func (s *Server) handleRemoteTerm(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 	id := req.URL.Query().Get("id")
 	connectorID := req.URL.Query().Get("connectorid")
-	resolvedConnectorID := s.redis.Get(s.ctx, req.Context().Value(id).(string))
+	resolvedConnectorID := s.redis.Get(s.ctx, "terminal:"+id)
 
 	if id == "" {
 		log.LoggerWContext(ctx).Error("Missing id query parameter")
@@ -508,7 +508,6 @@ func (s *Server) handleRemoteTerm(w http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(w).Encode(response)
 		return
 	}
-
 }
 
 func (s *Server) handleRemoteFingerbankCollectorEnv(w http.ResponseWriter, req *http.Request) {
