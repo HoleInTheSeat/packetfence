@@ -55,6 +55,7 @@ type Server struct {
 	connectorsIndexes     map[string]int
 	connectorIndexesLock  *sync.Mutex
 	radiusProxy           *radius_proxy.Proxy
+	ctx                   context.Context
 }
 
 var upgrader = websocket.Upgrader{
@@ -73,6 +74,7 @@ func NewServer(c *Config) (*Server, error) {
 		sessions:             settings.NewUsers(),
 		connectorsIndexes:    map[string]int{},
 		connectorIndexesLock: &sync.Mutex{},
+		ctx:                  context.Background(),
 	}
 	server.Info = true
 	server.users = settings.NewUserIndex(server.Logger)
