@@ -464,36 +464,39 @@ func (s *Server) handleLocalFingerbankCollectorEndpoints(w http.ResponseWriter, 
 }
 
 func (s *Server) handleRemoteTerm(w http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
+
 	id := req.URL.Query().Get("id")
 	connectorID := req.URL.Query().Get("connectorid")
+
+	log.LoggerWContext(s.ctx).Info("Id:", id, " ConnectorID:", connectorID)
+
 	resolvedConnectorID := s.redis.Get(s.ctx, "terminal:"+id)
 
 	if id == "" {
-		log.LoggerWContext(ctx).Error("Missing id query parameter")
+		log.LoggerWContext(s.ctx).Error("Missing id query parameter")
 		http.Error(w, "Missing id query parameter", http.StatusBadRequest)
 		return
 
 	}
 
 	if connectorID == "" {
-		log.LoggerWContext(ctx).Error("Missing connectorid query parameter")
+		log.LoggerWContext(s.ctx).Error("Missing connectorid query parameter")
 		http.Error(w, "Missing connectorid query parameter", http.StatusBadRequest)
 		return
 
 	}
 	if resolvedConnectorID.Err() != nil {
-		log.LoggerWContext(ctx).Error(fmt.Sprintf("Error retrieving connector ID for %s: %s", id, resolvedConnectorID.Err()))
+		log.LoggerWContext(s.ctx).Error(fmt.Sprintf("Error retrieving connector ID for %s: %s", id, resolvedConnectorID.Err()))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 	if resolvedConnectorID.Val() == "" {
-		log.LoggerWContext(ctx).Error(fmt.Sprintf("No connector ID found for %s", id))
+		log.LoggerWContext(s.ctx).Error(fmt.Sprintf("No connector ID found for %s", id))
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 	if resolvedConnectorID.Val() != connectorID {
-		log.LoggerWContext(ctx).Error("Connector ID %s does not match session ID %s", connectorID, resolvedConnectorID.Val())
+		log.LoggerWContext(s.ctx).Error("Connector ID %s does not match session ID %s", connectorID, resolvedConnectorID.Val())
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
