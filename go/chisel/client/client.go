@@ -1,6 +1,8 @@
 package chclient
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"crypto/md5"
 	"crypto/tls"
@@ -31,7 +33,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-//Config represents a client configuration
+// Config represents a client configuration
 type Config struct {
 	Fingerprint      string
 	Auth             string
@@ -47,7 +49,7 @@ type Config struct {
 	SrcIP            string
 }
 
-//TLSConfig for a Client
+// TLSConfig for a Client
 type TLSConfig struct {
 	SkipVerify bool
 	CA         string
@@ -55,7 +57,7 @@ type TLSConfig struct {
 	Key        string
 }
 
-//Client represents a client instance
+// Client represents a client instance
 type Client struct {
 	*cio.Logger
 	config    *Config
@@ -70,7 +72,7 @@ type Client struct {
 	tunnel    *tunnel.Tunnel
 }
 
-//NewClient creates a new client instance
+// NewClient creates a new client instance
 func NewClient(c *Config) (*Client, error) {
 	//apply default scheme
 	if !strings.HasPrefix(c.Server, "http") {
@@ -190,7 +192,7 @@ func NewClient(c *Config) (*Client, error) {
 	return client, nil
 }
 
-//Run starts client and blocks while connected
+// Run starts client and blocks while connected
 func (c *Client) Run() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -221,7 +223,7 @@ func (c *Client) verifyServer(hostname string, remote net.Addr, key ssh.PublicKe
 	return nil
 }
 
-//verifyLegacyFingerprint calculates and compares legacy MD5 fingerprints
+// verifyLegacyFingerprint calculates and compares legacy MD5 fingerprints
 func (c *Client) verifyLegacyFingerprint(key ssh.PublicKey) error {
 	bytes := md5.Sum(key.Marshal())
 	strbytes := make([]string, len(bytes))
@@ -236,7 +238,7 @@ func (c *Client) verifyLegacyFingerprint(key ssh.PublicKey) error {
 	return nil
 }
 
-//Start client and does not block
+// Start client and does not block
 func (c *Client) Start(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	c.stop = cancel
@@ -299,8 +301,76 @@ func (c *Client) Start(ctx context.Context) error {
 			}
 		}()
 	}
+	type clientInfo struct {
+		IP          []string `json:"ips"`
+		ConnectorID string   `json:"connector_id"`
+	}
 
+	Client := &clientInfo{}
+	// Get the default interface IPs
+	defaultIPs, err := getDefaultInterfaceIPs()
+	if err != nil {
+		return fmt.Errorf("failed to get default interface IPs: %w", err)
+	}
+	for _, ip := range defaultIPs {
+		Client.IP = append(Client.IP, ip.String())
+	}
+	Client.ConnectorID = strings.Split(c.config.Auth, ":")[0]
+	// Convert the clientInfo struct to JSON
+	clientInfoJSON, err := json.Marshal(Client)
+	if err != nil {
+		return fmt.Errorf("failed to marshal client info: %w", err)
+	}
+
+	// Send information about the client
+	res, err := http.Post("http://127.0.0.1:22226/api/v1/pfconnector/pfconnector-info", "application/json", bytes.NewBuffer(clientInfoJSON))
+
+	if err != nil {
+		return fmt.Errorf("failed to send client info: %w", err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code %d", res.StatusCode)
+	}
 	return nil
+}
+
+func getDefaultInterfaceIPs() ([]net.IP, error) {
+	file, err := os.Open("/proc/net/route")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Fields(line)
+		if len(fields) >= 2 && fields[1] == "00000000" { // Destination 0.0.0.0
+			net.InterfaceByName(fields[0])
+			iface, err := net.InterfaceByName(fields[0])
+			if err != nil {
+				return nil, fmt.Errorf("failed to get interface %s: %w", fields[0], err)
+			}
+			// Get the IP addresses of the interface
+			ifaceIPs, err := iface.Addrs()
+			if err != nil {
+				return nil, fmt.Errorf("failed to get addresses for interface %s: %w",
+					fields[0], err)
+			}
+			ips := make([]net.IP, 0, len(ifaceIPs))
+			for _, addr := range ifaceIPs {
+				if ipnet, ok := addr.(*net.IPNet); ok {
+					ips = append(ips, ipnet.IP)
+				}
+			}
+			if len(ips) == 0 {
+				return nil, fmt.Errorf("no IP addresses found for interface %s", fields[0])
+			}
+			return ips, nil
+		}
+	}
+	return nil, fmt.Errorf("No default route found")
 }
 
 func (c *Client) setProxy(u *url.URL, d *websocket.Dialer) error {
@@ -334,12 +404,12 @@ func (c *Client) setProxy(u *url.URL, d *websocket.Dialer) error {
 	return nil
 }
 
-//Wait blocks while the client is running.
+// Wait blocks while the client is running.
 func (c *Client) Wait() error {
 	return c.eg.Wait()
 }
 
-//Close manually stops the client
+// Close manually stops the client
 func (c *Client) Close() error {
 	if c.stop != nil {
 		c.stop()
