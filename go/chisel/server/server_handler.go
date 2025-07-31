@@ -470,7 +470,7 @@ func (s *Server) handleRemoteTerm(w http.ResponseWriter, req *http.Request) {
 
 	id := req.URL.Query().Get("id")
 	connectorID := req.URL.Query().Get("connectorid")
-	timeOut := req.URL.Query().Get("timeout")
+
 	log.LoggerWContext(s.ctx).Info("Id:", id, " ConnectorID:", connectorID)
 
 	resolvedConnectorID := s.redis.Get(s.ctx, "terminal:"+id)
@@ -517,7 +517,7 @@ func (s *Server) handleRemoteTerm(w http.ResponseWriter, req *http.Request) {
 		response := map[string]interface{}{
 			"authorized": true,
 			"message":    fmt.Sprintf("Authorized terminal session for connector ID %s", connectorID),
-			"timeout":    timeOut,
+			"timeout":    "360",
 		}
 
 		w.Header().Set("Content-Type", "application/json")
